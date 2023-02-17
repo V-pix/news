@@ -12,8 +12,9 @@ from .serializers import (
     FollowSerializer,
     ChanelSerializer,
     PostSerializer,
+    ReplySerializer,
 )
-from posts.models import Comment, Follow, Chanel, Post, User
+from posts.models import Comment, Follow, Chanel, Post, User, Reply
 
 
 class ClassFollowViewSet(
@@ -106,34 +107,52 @@ class CommentViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         post = get_object_or_404(Post, pk=self.kwargs.get("post_id"))
         return post.comments.all()
-
-
-class FollowViewSet123(viewsets.ModelViewSet):
-    queryset = Follow.objects.all()
-    # serializer_class = FollowValiSerializer
-    filter_backends = (filters.SearchFilter,)
-    filterset_fields = ("user", "following")
-    search_fields = ("following__username",)
-    # permission_classes = (
-        # permissions.IsAuthenticatedOrReadOnly,
-        # IsAuthorOrReadOnlyPermission,
-    # )
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def get_queryset(self):
-        user = get_object_or_404(User, username=self.request.user.username)
-        return user.follower.all()
     
-    @action(methods=['delete'], detail=True)
-    def deletewesf(self, request):
+    @action(
+        detail=True,
+        methods=["POST", "DELETE"],
+        permission_classes=[IsAuthenticated]
+    )
+    def reply123(self, request, pk, post_id):
+        # print(request)
         user = request.user
+        text = self.request.GET.get('text')
+        # print(text)
         if user.is_anonymous:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-        request = self.context.get("request")
-        following = request["following"].id
-        user = self.context.get("request").user
-        author = get_object_or_404(User, id=following)
-        Follow.objects.filter(user=user, author=author).delete()
+        comment = get_object_or_404(Comment, id=pk)
+        data = {"user": user.id, "comment": pk}
+        serializer = ReplySerializer(
+            data=data,
+            context={"request": request, "comment": comment},
+        )
+        serializer.is_valid(raise_exception=True)
+        if request.method == "POST":
+            text = self.request.GET.get('text')
+            print(text)
+            comment = Reply.objects.create(user=user, text=text, comment=comment)
+            return Response(
+                serializer.to_representation(instance=comment),
+                status=status.HTTP_201_CREATED,
+            )
+        Reply.objects.filter(user=user, comment=comment).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ReplyViewSet(viewsets.ModelViewSet):
+    queryset = Reply.objects.all()
+    serializer_class = ReplySerializer
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsAuthorOrReadOnlyPermission,
+    )
+
+    def perform_create(self, serializer):
+        # post = get_object_or_404(Post, pk=self.kwargs.get("post_id"))
+        comment = get_object_or_404(Comment, pk=self.kwargs.get("comment_id"))
+        serializer.save(comment_id=comment.id, author=self.request.user)
+
+    def get_queryset(self):
+        # post = get_object_or_404(Post, pk=self.kwargs.get("post_id"))
+        comment = get_object_or_404(Comment, pk=self.kwargs.get("comment_id"))
+        return comment.replies.all()

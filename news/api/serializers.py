@@ -4,7 +4,7 @@ from rest_framework.validators import UniqueTogetherValidator
 from django.core.exceptions import PermissionDenied
 
 
-from posts.models import Comment, Follow, Chanel, Post, User
+from posts.models import Comment, Follow, Chanel, Post, User, Reply
 
 
 class ChanelSerializer(serializers.ModelSerializer):
@@ -63,6 +63,19 @@ class CommentSerializer(serializers.ModelSerializer):
         model = Comment
         read_only_fields = ("author", "created", "post")
 
+
+class ReplySerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field="username"
+    )
+    post = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
+    comment = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
+
+    class Meta:
+        fields = "__all__"
+        model = Reply
+        read_only_fields = ("author", "created", "comment", "post")
+    
 
 class FollowValidSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(

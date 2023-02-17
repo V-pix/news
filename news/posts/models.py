@@ -88,6 +88,28 @@ class Comment(models.Model):
         return f"{self.text}, {self.author}, {self.post.id}"
 
 
+class Reply(models.Model):
+    author = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="replies",
+    )
+    comment = models.ForeignKey(
+        Comment, on_delete=models.CASCADE, related_name="replies",
+    )
+    text = models.TextField(
+        verbose_name="Текст ответа",
+    )
+    created = models.DateTimeField(
+        verbose_name="Дата добавления", auto_now_add=True, db_index=True,
+    )
+    
+    class Meta:
+        verbose_name = "Ответ"
+        verbose_name_plural = "Ответы"
+
+    def __str__(self) -> str:
+        return f"{self.text}, {self.author}, {self.comment.id}"
+
+
 class Follow(models.Model):
     user = models.ForeignKey(
         User,

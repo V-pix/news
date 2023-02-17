@@ -1,7 +1,7 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from .views import CommentViewSet, ChanelViewSet, PostViewSet
+from .views import CommentViewSet, ChanelViewSet, PostViewSet, ReplyViewSet
 
 app_name = "api"
 
@@ -11,6 +11,9 @@ router_v1.register("posts", PostViewSet)
 router_v1.register("chanels", ChanelViewSet)
 router_v1.register(
     r"posts/(?P<post_id>\d+)/comments", CommentViewSet, basename="comments"
+)
+router_v1.register(
+    r"posts/(?P<post_id>\d+)/comments/(?P<comment_id>\d+)/replies", ReplyViewSet, basename="comments"
 )
 # router_v1.register("follow", FollowViewSet)
 
