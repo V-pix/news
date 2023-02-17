@@ -3,10 +3,12 @@ from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 from .permissions import IsAuthorOrReadOnlyPermission
 from .serializers import (
     CommentSerializer,
+    FollowValidSerializer,
     FollowSerializer,
     ChanelSerializer,
     PostSerializer,
@@ -39,10 +41,55 @@ class ChanelViewSet(viewsets.ModelViewSet):
     permission_classes = (
         IsAuthorOrReadOnlyPermission,
     )
+    filter_backends = (filters.SearchFilter,)
+    filterset_fields = ("user", "following")
+    search_fields = ("following__username",)
     
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
+    
+    @action(
+        detail=True,
+        methods=["POST", "DELETE"],
+        permission_classes=[IsAuthenticated]
+    )
+    def subscribe(self, request, pk):
+        user = request.user
+        if user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        following = get_object_or_404(User, id=pk)
+        data = {"user": user.id, "following": pk}
+        serializer = FollowValidSerializer(
+            data=data,
+            context={"request": request, "following": following},
+        )
+        serializer.is_valid(raise_exception=True)
+        if request.method == "POST":
+            following = Follow.objects.create(user=user, following=following)
+            return Response(
+                serializer.to_representation(instance=following),
+                status=status.HTTP_201_CREATED,
+            )
+        Follow.objects.filter(user=user, following=following).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    @action(
+        detail=False,
+        permission_classes=(IsAuthenticated,),
+    )
+    def subscriptions(self, request):
+        user = request.user
+        # print(user)
+        if user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        queryset = User.objects.filter(following__user=user)
+        # print(queryset)
+        pages = self.paginate_queryset(queryset)
+        serializer = FollowSerializer(
+            pages, many=True, context={"request": request}
+        )
+        return self.get_paginated_response(serializer.data)
+    
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()
@@ -61,13 +108,12 @@ class CommentViewSet(viewsets.ModelViewSet):
         return post.comments.all()
 
 
-class FollowViewSet(viewsets.ModelViewSet):
+class FollowViewSet123(viewsets.ModelViewSet):
     queryset = Follow.objects.all()
-    serializer_class = FollowSerializer
+    # serializer_class = FollowValiSerializer
     filter_backends = (filters.SearchFilter,)
     filterset_fields = ("user", "following")
     search_fields = ("following__username",)
-    # permission_classes = permissions.IsAuthenticatedOrReadOnly
     # permission_classes = (
         # permissions.IsAuthenticatedOrReadOnly,
         # IsAuthorOrReadOnlyPermission,
@@ -91,11 +137,3 @@ class FollowViewSet(viewsets.ModelViewSet):
         author = get_object_or_404(User, id=following)
         Follow.objects.filter(user=user, author=author).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-    
-    def destroy123(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-    
-    def perform_destroy123(self, instance):
-        instance.delete()
