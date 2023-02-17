@@ -47,8 +47,14 @@ class Post(models.Model):
         Chanel,
         on_delete=models.CASCADE,
         related_name="posts",
-        blank=True,
+        blank=False,
         null=False,
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="posts",
+        verbose_name="Автор",
     )
     
     class Meta:

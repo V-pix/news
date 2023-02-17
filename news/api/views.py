@@ -1,5 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, mixins, permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
@@ -14,7 +15,7 @@ from posts.models import Comment, Follow, Chanel, Post, User
 
 
 class ClassFollowViewSet(
-    mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet
+    mixins.CreateModelMixin, mixins.ListModelMixin, mixins.DestroyModelMixin, viewsets.GenericViewSet
 ):
     pass
 
@@ -22,32 +23,25 @@ class ClassFollowViewSet(
 class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    # permission_classes = (
-        # permissions.IsAuthenticatedOrReadOnly,
-        # IsAuthorOrReadOnlyPermission,
-    # )
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsAuthorOrReadOnlyPermission,
+    )
     pagination_class = LimitOffsetPagination
     
-    
-    def perform_create123(self, serializer):
-        print(self.request)
-        chanel = get_object_or_404(Chanel, pk=self.kwargs.get("chanel_id"))
-        print(chanel)
-        serializer.save(chanel_id=chanel.id)
-    
-    def perform_create123(self, request, serializer):
-        if request.method == "POST":
-            user = request.user
-            if user.is_anonymous:
-                return Response(status=status.HTTP_401_UNAUTHORIZED)
-            chanel = get_object_or_404(Chanel, pk=self.kwargs.get("chanel_id"))
-            serializer.save(chanel_id=chanel.id)
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
-class ChanelViewSet(viewsets.ReadOnlyModelViewSet):
+class ChanelViewSet(viewsets.ModelViewSet):
     queryset = Chanel.objects.all()
     serializer_class = ChanelSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (
+        IsAuthorOrReadOnlyPermission,
+    )
+    
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -67,12 +61,17 @@ class CommentViewSet(viewsets.ModelViewSet):
         return post.comments.all()
 
 
-class FollowViewSet(ClassFollowViewSet):
+class FollowViewSet(viewsets.ModelViewSet):
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
     filter_backends = (filters.SearchFilter,)
     filterset_fields = ("user", "following")
     search_fields = ("following__username",)
+    # permission_classes = permissions.IsAuthenticatedOrReadOnly
+    # permission_classes = (
+        # permissions.IsAuthenticatedOrReadOnly,
+        # IsAuthorOrReadOnlyPermission,
+    # )
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -80,3 +79,23 @@ class FollowViewSet(ClassFollowViewSet):
     def get_queryset(self):
         user = get_object_or_404(User, username=self.request.user.username)
         return user.follower.all()
+    
+    @action(methods=['delete'], detail=True)
+    def deletewesf(self, request):
+        user = request.user
+        if user.is_anonymous:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+        request = self.context.get("request")
+        following = request["following"].id
+        user = self.context.get("request").user
+        author = get_object_or_404(User, id=following)
+        Follow.objects.filter(user=user, author=author).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def destroy123(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
+    def perform_destroy123(self, instance):
+        instance.delete()
