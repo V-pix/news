@@ -5,7 +5,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from .permissions import IsAuthorOrReadOnlyPermission
+from .permissions import IsAuthorOrReadOnlyPermission, IsAuthorOrReadOnlyPermission1
 from .serializers import (
     CommentSerializer,
     FollowValidSerializer,
@@ -13,8 +13,9 @@ from .serializers import (
     ChanelSerializer,
     PostSerializer,
     ReplySerializer,
+    ReactionSerializer,
 )
-from posts.models import Comment, Follow, Chanel, Post, User, Reply
+from posts.models import Comment, Follow, Chanel, Post, User, Reply, Reaction
 
 
 class ClassFollowViewSet(
@@ -156,3 +157,22 @@ class ReplyViewSet(viewsets.ModelViewSet):
         # post = get_object_or_404(Post, pk=self.kwargs.get("post_id"))
         comment = get_object_or_404(Comment, pk=self.kwargs.get("comment_id"))
         return comment.replies.all()
+
+
+class ReactionViewSet(viewsets.ModelViewSet):
+    queryset = Reaction.objects.all()
+    serializer_class = ReactionSerializer
+    permission_classes = (
+        permissions.IsAuthenticatedOrReadOnly,
+        IsAuthorOrReadOnlyPermission1,
+    )
+
+    def perform_create(self, serializer):
+        post = get_object_or_404(Post, pk=self.kwargs.get("post_id"))
+        # comment = get_object_or_404(Comment, pk=self.kwargs.get("comment_id"))
+        serializer.save(post_id=post.id, user=self.request.user)
+
+    def get_queryset(self):
+        post = get_object_or_404(Post, pk=self.kwargs.get("post_id"))
+        # comment = get_object_or_404(Comment, pk=self.kwargs.get("comment_id"))
+        return post.reactions.all()

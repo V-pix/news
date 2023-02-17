@@ -3,6 +3,13 @@ from django.db import models
 
 User = get_user_model()
 
+CHOICES = (
+        ('Good', '👍'),
+        ('Bad', '👎'),
+        ('Shame', '🤦🏻‍♂'),
+        ('Like', '❤️'),
+        ('Fire', '🔥'),
+    )
 
 class Chanel(models.Model):
     title = models.CharField(
@@ -139,3 +146,20 @@ class Follow(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user}, {self.following}"
+
+
+class Reaction(models.Model):
+    emoji = models.CharField(max_length=16, choices=CHOICES)
+    post = models.ForeignKey(
+        Post, on_delete=models.CASCADE, related_name="reactions",
+    )
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="reactions",
+    )
+    
+    class Meta:
+        verbose_name = "Реакция"
+        verbose_name_plural = "Реакции"
+
+    def __str__(self )-> str:
+        return self.emoji

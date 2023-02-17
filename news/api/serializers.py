@@ -4,7 +4,7 @@ from rest_framework.validators import UniqueTogetherValidator
 from django.core.exceptions import PermissionDenied
 
 
-from posts.models import Comment, Follow, Chanel, Post, User, Reply
+from posts.models import Comment, Follow, Chanel, Post, User, Reply, CHOICES, Reaction
 
 
 class ChanelSerializer(serializers.ModelSerializer):
@@ -75,7 +75,7 @@ class ReplySerializer(serializers.ModelSerializer):
         fields = "__all__"
         model = Reply
         read_only_fields = ("author", "created", "comment", "post")
-    
+
 
 class FollowValidSerializer(serializers.ModelSerializer):
     user = serializers.SlugRelatedField(
@@ -137,8 +137,43 @@ class FollowSerializer(serializers.ModelSerializer):
         
     def to_representation(self, instance):
         print(type(instance))
-        # representation = super().to_representation(instance)
         print(instance)
         return FollowSerializer(
             context={"request": self.context.get("request")}
         ).data
+
+
+class ReactionSerializer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(
+        read_only=True, slug_field="username"
+    )
+    post = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
+    emoji = serializers.ChoiceField(choices=CHOICES)
+
+    class Meta:
+        fields = "__all__"
+        model = Reaction
+        read_only_fields = ("user", "post")
+    
+    def create(self, validated_data):
+        reaction = Reaction.objects.create(**validated_data)
+        reaction.save()
+        return reaction
+    
+    def validate(self, data):
+        request = self.context.get("request")
+        print(data)
+        emoji = data["emoji"]
+        user = self.context.get("request").user
+        reaction = Reaction.objects.filter(user=user, emoji=emoji)
+        if request.method == "POST":
+            if reaction.exists():
+                raise serializers.ValidationError(
+                    "Вы уже отреагировали на этот пост."
+                )
+        if request.method == "DELETE":
+            if not reaction.exists():
+                raise serializers.ValidationError(
+                    "Вы не реагировали не этот пост."
+                )
+        return data
