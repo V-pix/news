@@ -4,12 +4,13 @@ from django.db import models
 User = get_user_model()
 
 CHOICES = (
-        ('Good', '👍'),
-        ('Bad', '👎'),
-        ('Shame', '🤦🏻‍♂'),
-        ('Like', '❤️'),
-        ('Fire', '🔥'),
-    )
+    ("Good", "👍"),
+    ("Bad", "👎"),
+    ("Shame", "🤦🏻‍♂"),
+    ("Like", "❤️"),
+    ("Fire", "🔥"),
+)
+
 
 class Chanel(models.Model):
     title = models.CharField(
@@ -19,7 +20,10 @@ class Chanel(models.Model):
         unique=True,
     )
     avatar = models.ImageField(
-        verbose_name="Аватарка", upload_to="avatars/", null=True, blank=True,
+        verbose_name="Аватарка",
+        upload_to="avatars/",
+        null=True,
+        blank=True,
     )
     description = models.TextField(
         verbose_name="Описание канала",
@@ -31,11 +35,11 @@ class Chanel(models.Model):
         related_name="chanels",
         verbose_name="Автор",
     )
-    
+
     class Meta:
         verbose_name = "Канал"
         verbose_name_plural = "Каналы"
-    
+
     def __str__(self) -> str:
         return self.title
 
@@ -63,7 +67,7 @@ class Post(models.Model):
         related_name="posts",
         verbose_name="Автор",
     )
-    
+
     class Meta:
         ordering = ("-pub_date",)
         verbose_name = "Пост"
@@ -75,18 +79,24 @@ class Post(models.Model):
 
 class Comment(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="comments",
+        User,
+        on_delete=models.CASCADE,
+        related_name="comments",
     )
     post = models.ForeignKey(
-        Post, on_delete=models.CASCADE, related_name="comments",
+        Post,
+        on_delete=models.CASCADE,
+        related_name="comments",
     )
     text = models.TextField(
         verbose_name="Текст комментария",
     )
     created = models.DateTimeField(
-        verbose_name="Дата добавления", auto_now_add=True, db_index=True,
+        verbose_name="Дата добавления",
+        auto_now_add=True,
+        db_index=True,
     )
-    
+
     class Meta:
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"
@@ -97,18 +107,24 @@ class Comment(models.Model):
 
 class Reply(models.Model):
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="replies",
+        User,
+        on_delete=models.CASCADE,
+        related_name="replies",
     )
     comment = models.ForeignKey(
-        Comment, on_delete=models.CASCADE, related_name="replies",
+        Comment,
+        on_delete=models.CASCADE,
+        related_name="replies",
     )
     text = models.TextField(
         verbose_name="Текст ответа",
     )
     created = models.DateTimeField(
-        verbose_name="Дата добавления", auto_now_add=True, db_index=True,
+        verbose_name="Дата добавления",
+        auto_now_add=True,
+        db_index=True,
     )
-    
+
     class Meta:
         verbose_name = "Ответ"
         verbose_name_plural = "Ответы"
@@ -151,15 +167,19 @@ class Follow(models.Model):
 class Reaction(models.Model):
     emoji = models.CharField(max_length=16, choices=CHOICES)
     post = models.ForeignKey(
-        Post, on_delete=models.CASCADE, related_name="reactions",
+        Post,
+        on_delete=models.CASCADE,
+        related_name="reactions",
     )
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="reactions",
+        User,
+        on_delete=models.CASCADE,
+        related_name="reactions",
     )
-    
+
     class Meta:
         verbose_name = "Реакция"
         verbose_name_plural = "Реакции"
 
-    def __str__(self )-> str:
+    def __str__(self) -> str:
         return self.emoji

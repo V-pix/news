@@ -1,3 +1,6 @@
+import base64
+
+from django.core.files.base import ContentFile
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
@@ -7,33 +10,53 @@ from django.core.exceptions import PermissionDenied
 from posts.models import Comment, Follow, Chanel, Post, User, Reply, CHOICES, Reaction
 
 
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith("data:image"):
+            format, imgstr = data.split(";base64,")
+            ext = format.split("/")[-1]
+
+            data = ContentFile(base64.b64decode(imgstr), name="temp." + ext)
+
+        return super().to_internal_value(data)
+
+
 class ChanelSerializer(serializers.ModelSerializer):
     posts = serializers.StringRelatedField(many=True, read_only=True)
     author = SlugRelatedField(slug_field="username", read_only=True)
+    avatar = Base64ImageField(required=False, allow_null=True)
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
         model = Chanel
-        fields = ("id", "title", "avatar", "description", "author", "posts", "is_subscribed",)
-    
+        fields = (
+            "id",
+            "title",
+            "avatar",
+            "description",
+            "author",
+            "posts",
+            "is_subscribed",
+        )
+
     def get_is_subscribed(self, data):
         request = self.context.get("request")
         if not request or request.user.is_anonymous:
             return False
         user = request.user
-        return Follow.objects.filter(user=self.context.get("request").user, following=data.id).exists()
+        return Follow.objects.filter(
+            user=self.context.get("request").user, following=data.id
+        ).exists()
 
 
 class PostSerializer(serializers.ModelSerializer):
-    # chanel = serializers.StringRelatedField(read_only=True)
     author = SlugRelatedField(slug_field="username", read_only=True)
 
     class Meta:
         fields = ("id", "text", "pub_date", "chanel", "author")
         model = Post
         read_only_field = ("author",)
-        # read_only_field = ("pub_date", "chanel",)
-        
+
     def validate(self, data):
         request = self.context.get("request")
         chanel = data["chanel"]
@@ -41,21 +64,15 @@ class PostSerializer(serializers.ModelSerializer):
         chanels = Chanel.objects.filter(author=user)
         if request.method == "POST":
             if chanel not in chanels:
-                raise serializers.ValidationError(
-                    "Нельзя выбрать чужой канал"
-                )
+                raise serializers.ValidationError("Нельзя выбрать чужой канал")
         if request.method == "PUT":
             if chanel not in chanels:
-                raise PermissionDenied(
-                    "Нельзя редактировать чужой пост"
-                )
+                raise PermissionDenied("Нельзя редактировать чужой пост")
         return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        read_only=True, slug_field="username"
-    )
+    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
     post = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
 
     class Meta:
@@ -65,9 +82,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class ReplySerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(
-        read_only=True, slug_field="username"
-    )
+    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
     post = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
     comment = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
 
@@ -107,13 +122,15 @@ class FollowValidSerializer(serializers.ModelSerializer):
                 )
             if follow.exists():
                 raise serializers.ValidationError(
-                    "Вы уже подписаны на этого пользователя"
+                    "Вы уже подписаны на этого пользователя."
                 )
         if request.method == "DELETE":
-            if not follow.exists():
+            if user == following:
                 raise serializers.ValidationError(
-                    "Вы не подписаны на этого автора."
+                    "Нельзя подписываться от самого себя."
                 )
+            if not follow.exists():
+                raise serializers.ValidationError("Вы не подписаны на этого автора.")
         return data
 
 
@@ -128,25 +145,20 @@ class FollowSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Follow
-        fields = ("user", "following", "is_subscribed",)
-        
-    def get_is_subscribed(self, following):
+        fields = (
+            "user",
+            "following",
+            "is_subscribed",
+        )
+    
+    def get_is_subscribed(self, obj):
         return Follow.objects.filter(
-            user=self.context.get("request").user, following=following
+            user=obj.user, following=obj.following
         ).exists()
-        
-    def to_representation(self, instance):
-        print(type(instance))
-        print(instance)
-        return FollowSerializer(
-            context={"request": self.context.get("request")}
-        ).data
 
 
 class ReactionSerializer(serializers.ModelSerializer):
-    user = serializers.SlugRelatedField(
-        read_only=True, slug_field="username"
-    )
+    user = serializers.SlugRelatedField(read_only=True, slug_field="username")
     post = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
     emoji = serializers.ChoiceField(choices=CHOICES)
 
@@ -154,12 +166,12 @@ class ReactionSerializer(serializers.ModelSerializer):
         fields = "__all__"
         model = Reaction
         read_only_fields = ("user", "post")
-    
+
     def create(self, validated_data):
         reaction = Reaction.objects.create(**validated_data)
         reaction.save()
         return reaction
-    
+
     def validate(self, data):
         request = self.context.get("request")
         print(data)
@@ -168,12 +180,8 @@ class ReactionSerializer(serializers.ModelSerializer):
         reaction = Reaction.objects.filter(user=user, emoji=emoji)
         if request.method == "POST":
             if reaction.exists():
-                raise serializers.ValidationError(
-                    "Вы уже отреагировали на этот пост."
-                )
+                raise serializers.ValidationError("Вы уже отреагировали на этот пост.")
         if request.method == "DELETE":
             if not reaction.exists():
-                raise serializers.ValidationError(
-                    "Вы не реагировали не этот пост."
-                )
+                raise serializers.ValidationError("Вы не реагировали не этот пост.")
         return data

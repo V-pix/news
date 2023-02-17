@@ -1,7 +1,13 @@
 from django.urls import include, path
 from rest_framework import routers
 
-from .views import CommentViewSet, ChanelViewSet, PostViewSet, ReplyViewSet, ReactionViewSet
+from .views import (
+    CommentViewSet,
+    ChanelViewSet,
+    PostViewSet,
+    ReplyViewSet,
+    ReactionViewSet,
+)
 
 app_name = "api"
 
@@ -16,13 +22,15 @@ router_v1.register(
     r"posts/(?P<post_id>\d+)/reactions", ReactionViewSet, basename="reactions"
 )
 router_v1.register(
-    r"posts/(?P<post_id>\d+)/comments/(?P<comment_id>\d+)/replies", ReplyViewSet, basename="replies"
+    r"posts/(?P<post_id>\d+)/comments/(?P<comment_id>\d+)/replies",
+    ReplyViewSet,
+    basename="replies",
 )
 # router_v1.register("follow", FollowViewSet)
 
 urlpatterns = [
     path(
-        "users/subscriptions/",
+        "v1/users/subscriptions/",
         ChanelViewSet.as_view(
             {
                 "get": "subscriptions",

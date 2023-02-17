@@ -5,28 +5,36 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('posts', '0001_initial'),
+        ("posts", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='chanel',
-            options={'verbose_name': 'Канал', 'verbose_name_plural': 'Каналы'},
+            name="chanel",
+            options={"verbose_name": "Канал", "verbose_name_plural": "Каналы"},
         ),
         migrations.AlterModelOptions(
-            name='comment',
-            options={'verbose_name': 'Комментарий', 'verbose_name_plural': 'Комментарии'},
+            name="comment",
+            options={
+                "verbose_name": "Комментарий",
+                "verbose_name_plural": "Комментарии",
+            },
         ),
         migrations.AlterModelOptions(
-            name='follow',
-            options={'verbose_name': 'Подписка', 'verbose_name_plural': 'Подписки'},
+            name="follow",
+            options={"verbose_name": "Подписка", "verbose_name_plural": "Подписки"},
         ),
         migrations.AlterField(
-            model_name='post',
-            name='chanel',
-            field=models.ForeignKey(blank=True, default=1, on_delete=django.db.models.deletion.CASCADE, related_name='posts', to='posts.Chanel'),
+            model_name="post",
+            name="chanel",
+            field=models.ForeignKey(
+                blank=True,
+                default=1,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="posts",
+                to="posts.Chanel",
+            ),
             preserve_default=False,
         ),
     ]
