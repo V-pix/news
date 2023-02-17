@@ -21,7 +21,7 @@ class ChanelSerializer(serializers.ModelSerializer):
         if not request or request.user.is_anonymous:
             return False
         user = request.user
-        return Follow.objects.filter(user=user, author=data).exists()
+        return Follow.objects.filter(user=self.context.get("request").user, following=data.id).exists()
 
 
 class PostSerializer(serializers.ModelSerializer):
