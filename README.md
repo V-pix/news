@@ -54,6 +54,9 @@ docker-compose up -d
 ```
 ### Выполните миграции:
 ```bash
+docker-compose exec web python manage.py makemigrations
+```
+```bash
 docker-compose exec web python manage.py migrate
 ```
 ### Заполните тестовые данные:
@@ -61,14 +64,14 @@ docker-compose exec web python manage.py migrate
 docker-compose exec web python manage.py loaddata dump.json
 ```
 ### Теперь проект доступен по адресам: 
-http://localhost/admin/
-http://localhost/swagger/
-http://localhost/api/v1/chanels/
-http://localhost/api/v1/posts/
-http://localhost/api/v1/posts/5/comments/
-http://localhost/api/v1/posts/5/comments/1/replies/
-http://localhost/api/v1/posts/5/reactions/
-http://localhost/api/v1/users/subscription/
+- http://localhost/admin/
+- http://localhost/swagger/
+- http://localhost/api/v1/chanels/
+- http://localhost/api/v1/posts/
+- http://localhost/api/v1/posts/5/comments/
+- http://localhost/api/v1/posts/5/comments/1/replies/
+- http://localhost/api/v1/posts/5/reactions/
+- http://localhost/api/v1/users/subscription/
 
 
 Учетная запись администратора
