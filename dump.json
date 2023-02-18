@@ -1,0 +1,274 @@
+[
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$150000$ypcB8gMbXgb0$VDUL61XRhUbMezbL7Ubc9mVBufjTlJHbjUSTn3UGSx4=",
+    "last_login": "2023-02-15T09:49:49.032Z",
+    "is_superuser": true,
+    "username": "v",
+    "first_name": "",
+    "last_name": "",
+    "email": "v@ya.ru",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2023-02-15T06:18:57.069Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$150000$qepsq755WRG8$teSlVtlbO25bIyp3WzkVBu/I8ZQQvDlfCQMmi2UPRCA=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "user",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2023-02-15T09:41:38.709Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$150000$jc8rA4cCRsbX$+IaW1XTjq+8MJ9DHbRJSi5SJQ096KaU+lobCdeLbWQs=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "us",
+    "first_name": "",
+    "last_name": "",
+    "email": "",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2023-02-16T08:15:50.360Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 4,
+  "fields": {
+    "password": "pbkdf2_sha256$150000$bZZ3okTsx8qu$kOvTWSj8NyVITE/xOWRYFdUDN8mfWi+nXVLYjSIwWlM=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "test",
+    "first_name": "",
+    "last_name": "",
+    "email": "user@example.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2023-02-17T14:16:10.881Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "posts.chanel",
+  "pk": 1,
+  "fields": {
+    "title": "Food",
+    "avatar": "avatars/IMG_4452.jpg",
+    "description": "About food",
+    "author": 2
+  }
+},
+{
+  "model": "posts.chanel",
+  "pk": 2,
+  "fields": {
+    "title": "Weather",
+    "avatar": "",
+    "description": "About weather",
+    "author": 3
+  }
+},
+{
+  "model": "posts.chanel",
+  "pk": 3,
+  "fields": {
+    "title": "Travel",
+    "avatar": "avatars/temp.png",
+    "description": "The best places",
+    "author": 3
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 1,
+  "fields": {
+    "text": "It was very delicious dinner",
+    "pub_date": "2023-02-15T10:47:47.827Z",
+    "chanel": 1,
+    "author": 1
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 2,
+  "fields": {
+    "text": "Every day I have oats on breakfast",
+    "pub_date": "2023-02-16T08:31:06.275Z",
+    "chanel": 1,
+    "author": 1
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 3,
+  "fields": {
+    "text": "Tea or coffe?",
+    "pub_date": "2023-02-16T19:30:12.038Z",
+    "chanel": 1,
+    "author": 3
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 4,
+  "fields": {
+    "text": "Tea or coffe?",
+    "pub_date": "2023-02-16T19:30:55.072Z",
+    "chanel": 2,
+    "author": 3
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 5,
+  "fields": {
+    "text": "Good food",
+    "pub_date": "2023-02-16T19:33:01.919Z",
+    "chanel": 1,
+    "author": 3
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 7,
+  "fields": {
+    "text": "Tea or coffe?",
+    "pub_date": "2023-02-16T19:49:11.531Z",
+    "chanel": 1,
+    "author": 3
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 8,
+  "fields": {
+    "text": "Tea or coffe?",
+    "pub_date": "2023-02-16T20:35:26.446Z",
+    "chanel": 2,
+    "author": 3
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 9,
+  "fields": {
+    "text": "Tea or coffe?",
+    "pub_date": "2023-02-16T20:35:47.006Z",
+    "chanel": 2,
+    "author": 3
+  }
+},
+{
+  "model": "posts.post",
+  "pk": 10,
+  "fields": {
+    "text": "Good food - good mood",
+    "pub_date": "2023-02-16T21:19:40.287Z",
+    "chanel": 2,
+    "author": 3
+  }
+},
+{
+  "model": "posts.comment",
+  "pk": 1,
+  "fields": {
+    "author": 3,
+    "post": 5,
+    "text": "Good night",
+    "created": "2023-02-16T21:23:06.982Z"
+  }
+},
+{
+  "model": "posts.reply",
+  "pk": 1,
+  "fields": {
+    "author": 3,
+    "comment": 1,
+    "text": "Good morning",
+    "created": "2023-02-17T11:08:10.139Z"
+  }
+},
+{
+  "model": "posts.reply",
+  "pk": 2,
+  "fields": {
+    "author": 3,
+    "comment": 1,
+    "text": "Good morning",
+    "created": "2023-02-17T13:27:28.507Z"
+  }
+},
+{
+  "model": "posts.follow",
+  "pk": 5,
+  "fields": {
+    "user": 3,
+    "following": 2
+  }
+},
+{
+  "model": "posts.follow",
+  "pk": 6,
+  "fields": {
+    "user": 3,
+    "following": 1
+  }
+},
+{
+  "model": "posts.follow",
+  "pk": 8,
+  "fields": {
+    "user": 4,
+    "following": 1
+  }
+},
+{
+  "model": "posts.follow",
+  "pk": 9,
+  "fields": {
+    "user": 4,
+    "following": 2
+  }
+},
+{
+  "model": "posts.reaction",
+  "pk": 2,
+  "fields": {
+    "emoji": "Good",
+    "post": 5,
+    "user": 3
+  }
+},
+{
+  "model": "posts.reaction",
+  "pk": 3,
+  "fields": {
+    "emoji": "Good",
+    "post": 5,
+    "user": 3
+  }
+}
+]

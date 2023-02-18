@@ -5,7 +5,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from .permissions import IsAuthorOrReadOnlyPermission, IsAuthorOrReadOnlyPermission1
+from .permissions import IsAuthorOrReadOnlyPermission, ReactionIsAuthorOrReadOnlyPermission
 from .serializers import (
     CommentSerializer,
     FollowValidSerializer,
@@ -80,7 +80,6 @@ class ChanelViewSet(viewsets.ModelViewSet):
     )
     def subscriptions(self, request):
         user = request.user
-        # print(user)
         if user.is_anonymous:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         queryset = Follow.objects.filter(user=user)
@@ -115,12 +114,10 @@ class ReplyViewSet(viewsets.ModelViewSet):
     )
 
     def perform_create(self, serializer):
-        # post = get_object_or_404(Post, pk=self.kwargs.get("post_id"))
         comment = get_object_or_404(Comment, pk=self.kwargs.get("comment_id"))
         serializer.save(comment_id=comment.id, author=self.request.user)
 
     def get_queryset(self):
-        # post = get_object_or_404(Post, pk=self.kwargs.get("post_id"))
         comment = get_object_or_404(Comment, pk=self.kwargs.get("comment_id"))
         return comment.replies.all()
 
@@ -130,15 +127,13 @@ class ReactionViewSet(viewsets.ModelViewSet):
     serializer_class = ReactionSerializer
     permission_classes = (
         permissions.IsAuthenticatedOrReadOnly,
-        IsAuthorOrReadOnlyPermission1,
+        ReactionIsAuthorOrReadOnlyPermission,
     )
 
     def perform_create(self, serializer):
         post = get_object_or_404(Post, pk=self.kwargs.get("post_id"))
-        # comment = get_object_or_404(Comment, pk=self.kwargs.get("comment_id"))
         serializer.save(post_id=post.id, user=self.request.user)
 
     def get_queryset(self):
         post = get_object_or_404(Post, pk=self.kwargs.get("post_id"))
-        # comment = get_object_or_404(Comment, pk=self.kwargs.get("comment_id"))
         return post.reactions.all()
