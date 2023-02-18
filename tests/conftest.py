@@ -1,6 +1,5 @@
 import pytest
-
-from posts.models import Post, Chanel
+from posts.models import Chanel, Post
 
 
 @pytest.fixture

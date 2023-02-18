@@ -5,7 +5,6 @@
 - [Используемые технологии](#technologies)
 - [Запуск проекта с докером](#launch)
 - [Примеры работы с API для всех пользователей](#unauth)
-- [Примеры работы с API для авторизованных пользователей](#auth)
 
 <a id=description></a>
 ## Описание
@@ -122,3 +121,6 @@ POST /api/v1/jwt/verify/ - проверка JWT-токена
 ```bash
 GET /api/v1/posts/?limit=5&offset=0 - пагинация на 5 постов, начиная с первого
 ```
+
+К проекту есть схема базы данных:
+https://drive.google.com/file/d/1p9Rwt55bsyibUgeIj-EFLx_0d_ChEUrU/view?usp=sharing

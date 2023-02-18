@@ -1,21 +1,16 @@
 from django.shortcuts import get_object_or_404
+from posts.models import Chanel, Comment, Follow, Post, Reaction, Reply, User
 from rest_framework import filters, mixins, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
 
-from .permissions import IsAuthorOrReadOnlyPermission, ReactionIsAuthorOrReadOnlyPermission
-from .serializers import (
-    CommentSerializer,
-    FollowValidSerializer,
-    FollowSerializer,
-    ChanelSerializer,
-    PostSerializer,
-    ReplySerializer,
-    ReactionSerializer,
-)
-from posts.models import Comment, Follow, Chanel, Post, User, Reply, Reaction
+from .permissions import (IsAuthorOrReadOnlyPermission,
+                          ReactionIsAuthorOrReadOnlyPermission)
+from .serializers import (ChanelSerializer, CommentSerializer,
+                          FollowSerializer, FollowValidSerializer,
+                          PostSerializer, ReactionSerializer, ReplySerializer)
 
 
 class ClassFollowViewSet(
@@ -52,7 +47,9 @@ class ChanelViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     @action(
-        detail=True, methods=["POST", "DELETE"], permission_classes=[IsAuthenticated]
+        detail=True,
+        methods=["POST", "DELETE"],
+        permission_classes=[IsAuthenticated]
     )
     def subscribe(self, request, pk):
         user = request.user
@@ -84,7 +81,11 @@ class ChanelViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_401_UNAUTHORIZED)
         queryset = Follow.objects.filter(user=user)
         pages = self.paginate_queryset(queryset)
-        serializer = FollowSerializer(pages, many=True, context={"request": request})
+        serializer = FollowSerializer(
+            pages,
+            many=True,
+            context={"request": request}
+        )
         return self.get_paginated_response(serializer.data)
 
 

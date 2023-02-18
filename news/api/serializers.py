@@ -1,13 +1,12 @@
 import base64
 
+from django.core.exceptions import PermissionDenied
 from django.core.files.base import ContentFile
+from posts.models import (CHOICES, Chanel, Comment, Follow, Post, Reaction,
+                          Reply)
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
-from django.core.exceptions import PermissionDenied
-
-
-from posts.models import Comment, Follow, Chanel, Post, User, Reply, CHOICES, Reaction
 
 
 class Base64ImageField(serializers.ImageField):
@@ -43,7 +42,6 @@ class ChanelSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if not request or request.user.is_anonymous:
             return False
-        user = request.user
         return Follow.objects.filter(
             user=self.context.get("request").user, following=data.id
         ).exists()
@@ -72,7 +70,10 @@ class PostSerializer(serializers.ModelSerializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="username"
+    )
     post = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
 
     class Meta:
@@ -82,7 +83,10 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class ReplySerializer(serializers.ModelSerializer):
-    author = serializers.SlugRelatedField(read_only=True, slug_field="username")
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field="username"
+    )
     post = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
     comment = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
 
@@ -98,7 +102,9 @@ class FollowValidSerializer(serializers.ModelSerializer):
         slug_field="username",
         default=serializers.CurrentUserDefault(),
     )
-    following = serializers.PrimaryKeyRelatedField(queryset=Chanel.objects.all())
+    following = serializers.PrimaryKeyRelatedField(
+        queryset=Chanel.objects.all()
+    )
 
     class Meta:
         model = Follow
@@ -130,7 +136,9 @@ class FollowValidSerializer(serializers.ModelSerializer):
                     "Нельзя подписываться от самого себя."
                 )
             if not follow.exists():
-                raise serializers.ValidationError("Вы не подписаны на этого автора.")
+                raise serializers.ValidationError(
+                    "Вы не подписаны на этого автора."
+                )
         return data
 
 
@@ -141,7 +149,9 @@ class FollowSerializer(serializers.ModelSerializer):
         slug_field="username",
         default=serializers.CurrentUserDefault(),
     )
-    following = serializers.PrimaryKeyRelatedField(queryset=Chanel.objects.all())
+    following = serializers.PrimaryKeyRelatedField(
+        queryset=Chanel.objects.all()
+    )
 
     class Meta:
         model = Follow
@@ -150,10 +160,11 @@ class FollowSerializer(serializers.ModelSerializer):
             "following",
             "is_subscribed",
         )
-    
+
     def get_is_subscribed(self, obj):
         return Follow.objects.filter(
-            user=obj.user, following=obj.following
+            user=obj.user,
+            following=obj.following
         ).exists()
 
 
@@ -180,8 +191,12 @@ class ReactionSerializer(serializers.ModelSerializer):
         reaction = Reaction.objects.filter(user=user, emoji=emoji)
         if request.method == "POST":
             if reaction.exists():
-                raise serializers.ValidationError("Вы уже отреагировали на этот пост.")
+                raise serializers.ValidationError(
+                    "Вы уже отреагировали на этот пост."
+                )
         if request.method == "DELETE":
             if not reaction.exists():
-                raise serializers.ValidationError("Вы не реагировали не этот пост.")
+                raise serializers.ValidationError(
+                    "Вы не реагировали не этот пост."
+                )
         return data
